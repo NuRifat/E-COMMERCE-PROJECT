@@ -1,7 +1,7 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import ProductList from '../pages/ProductList';
-import ProductDetails from '../pages/ProductDetails';
+import ProductList from './pages/ProductList';
+import ProductDetails from './pages/ProductDetails';
 
 function App() {
   
