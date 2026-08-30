@@ -1,12 +1,10 @@
 import { useCart } from "../context/CartContext";
 
 function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, total, removeFromCart, updateQuantity } = useCart();
+  const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
+  console.log("Cart Items:", cartItems);
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
 
   return (
     <div className="pt-20 min-h-screen bg-gray-100 p-8">
@@ -21,8 +19,19 @@ function CartPage() {
               className="flex items-center justify-between mb-4"
             >
               <div>
-                <h2 className="text-lg font-semibold">{item.name}</h2>
-                <p className="text-gray-600">${item.price}</p>
+                <div className="flex items-center gap-4">
+                  {item.product_image && (
+                    <img
+                      src={`${BASEURL}${item.product_image}`}
+                      alt={item.product_name}
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">{item.product_name}</h2>
+                  <p className="text-gray-600">${item.product_price}</p>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
