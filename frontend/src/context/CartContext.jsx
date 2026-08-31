@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  createRef,
+} from "react";
+import { authFetch, getAccessToken } from "../utils/auth";
 
 const CartContext = createContext();
 
@@ -10,10 +17,7 @@ export const CartProvider = ({ children }) => {
   //Fetch Cart form BE
   const fetchCart = async () => {
     try {
-      const res = await fetch(`${BASEURL}/api/cart/`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch cart");
-      }
+      const res = await authFetch(`${BASEURL}/api/cart/`);
       const data = await res.json();
       setCartItems(data.items || []);
       setTotal(data.total || 0);
@@ -29,19 +33,14 @@ export const CartProvider = ({ children }) => {
   //Add Product to Cart
   const addToCart = async (productId) => {
     try {
-      const res = await fetch(`${BASEURL}/api/cart/add/`, {
+      await authFetch(`${BASEURL}/api/cart/add/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ product_id: productId }),
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to add product");
-      }
-
-      await fetchCart();
+      fetchCart();
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
@@ -50,7 +49,7 @@ export const CartProvider = ({ children }) => {
   //Remove Product from Cart
   const removeFromCart = async (itemId) => {
     try {
-      await fetch(`${BASEURL}/api/cart/remove/`, {
+      await authFetch(`${BASEURL}/api/cart/remove/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +69,7 @@ export const CartProvider = ({ children }) => {
       return;
     }
     try {
-      await fetch(`${BASEURL}/api/cart/update/`, {
+      await authFetch(`${BASEURL}/api/cart/update/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,14 +81,22 @@ export const CartProvider = ({ children }) => {
       console.error("Error updating quantity:", error);
     }
   };
+
   const clearCart = () => {
     setCartItems([]);
     setTotal(0);
-  }
+  };
 
   return (
     <CartContext.Provider
-      value={{ cartItems, total, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{
+        cartItems,
+        total,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>

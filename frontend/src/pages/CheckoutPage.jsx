@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authFetch } from "../utils/auth";
 import { useCart } from "../context/CartContext";
 
 function CheckoutPage() {
-  const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
-  const navigate = useNavigate();
-  const { clearCart } = useCart();
-
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -14,97 +11,82 @@ function CheckoutPage() {
     payment_method: "COD",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const nav = useNavigate();
+  const { clearCart } = useCart();
+  const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
+
     try {
-      const res = await fetch(`${BASEURL}/api/orders/create/`, {
+      const res = await authFetch(`${BASEURL}/api/orders/create/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(form),
       });
+
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Order placed successfully!");
-        fetch(`${BASEURL}/api/cart/`);
         clearCart();
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+        alert("Order placed successfully!");
+        nav("/");
       } else {
-        setMessage(data.error || "Failed to place order. Please try again.");
+        alert(data.error || "Order failed");
       }
     } catch (error) {
-      setMessage("An error occurred. Please try again.");
+      console.error("Checkout error:", error);
     }
   };
-  return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center p-6">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">Checkout</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+  return (
+    <div className="pt-20 p-6">
+      <div className="max-w-lg mx-auto bg-white p-6 shadow rounded">
+        <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
-            type="text"
             name="name"
-            placeholder="Full Name"
             value={form.name}
             onChange={handleChange}
+            placeholder="Your Name"
             required
-            className="w-full border rounded-lg p-2"
+            className="w-full p-2 border rounded"
           />
-          <textarea
+
+          <input
             name="address"
-            placeholder="Full Address"
             value={form.address}
             onChange={handleChange}
+            placeholder="Address"
             required
-            className="w-full border rounded-lg p-2"
+            className="w-full p-2 border rounded"
           />
+
           <input
-            type="tel"
             name="phone"
-            placeholder="Phone Number"
             value={form.phone}
             onChange={handleChange}
+            placeholder="Phone Number"
             required
-            className="w-full border rounded-lg p-2"
+            className="w-full p-2 border rounded"
           />
+
           <select
             name="payment_method"
             value={form.payment_method}
             onChange={handleChange}
-            className="w-full border rounded-lg p-2"
+            className="w-full p-2 border rounded"
           >
             <option value="COD">Cash on Delivery</option>
-            <option value="CreditCard">Online Payment</option>
+            <option value="ONLINE">Online Payment</option>
           </select>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
-          >
-            {loading ? "Processing..." : "Place Order"}
+
+          <button className="w-full bg-green-600 text-white py-2 rounded">
+            Place Order
           </button>
-          {message && (
-            <p className="text-center text-green-700 font-semibold mt-4">
-              {message}
-            </p>
-          )}
         </form>
       </div>
     </div>
